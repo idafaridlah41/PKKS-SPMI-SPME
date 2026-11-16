@@ -23,10 +23,14 @@
     </script>
     <style>
         :root {
-            --user-font-size: 15px;
+            --user-font-size: 16px;
+        }
+        html {
+            font-size: var(--user-font-size);
         }
         body {
-            font-size: var(--user-font-size);
+            font-size: 1rem;
+            line-height: 1.55;
             transition: background-color 0.25s, color 0.25s;
         }
         .chart-container {
@@ -66,11 +70,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        /* Print Media Rules - Isolasi Cetak Bersih */
+        /* Print Media Rules - Isolasi Cetak Bersih & Standar Dokumen Resmi */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: white !important; color: black !important; font-size: 10.5pt !important; }
-            .no-print, header, footer, #global-identity-panel, #toast { display: none !important; }
+            html { font-size: 14px !important; }
+            body { background: white !important; color: black !important; font-size: 10.5pt !important; line-height: 1.4 !important; }
+            .no-print, header, footer, #global-identity-panel, #toast, #modal-overlay { display: none !important; }
             main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
             .tab-section { display: none !important; }
             .tab-section.active-print { display: block !important; }
@@ -110,8 +115,11 @@
 
             <!-- Utility Controls -->
             <div class="flex flex-wrap items-center gap-1.5 text-xs">
-                <button onclick="adjustFontSize(-1)" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 rounded border border-slate-600 font-bold" title="Perkecil Teks">A-</button>
-                <button onclick="adjustFontSize(1)" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 rounded border border-slate-600 font-bold" title="Perbesar Teks">A+</button>
+                <div class="flex items-center bg-slate-800 rounded border border-slate-600 overflow-hidden" title="Pengaturan Ukuran Huruf Layar">
+                    <button onclick="adjustFontSize(-1)" class="px-2.5 py-1.5 hover:bg-slate-700 font-bold" title="Perkecil Teks">A-</button>
+                    <button onclick="resetFontSize()" id="btn-font-indicator" class="px-2 py-1.5 bg-slate-900/80 hover:bg-slate-700 font-semibold text-emerald-400 border-x border-slate-600" title="Reset Ukuran Standar (16px)">16px</button>
+                    <button onclick="adjustFontSize(1)" class="px-2.5 py-1.5 hover:bg-slate-700 font-bold" title="Perbesar Teks (Nyaman Baca)">A+</button>
+                </div>
                 <button onclick="toggleDarkMode()" id="btn-theme" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded font-bold">☀️ Terang</button>
                 <button onclick="saveAllData(true)" class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-bold">💾 Simpan</button>
                 <button onclick="exportJSON()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold">📥 Ekspor JSON</button>
@@ -150,7 +158,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                     <select id="school-selector" onchange="switchSchool(this.value)" class="flex-grow md:w-72 p-2 rounded-lg border-2 border-emerald-500 bg-emerald-50/50 dark:bg-slate-900 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"></select>
-                    <button onclick="addNewSchool()" class="px-2.5 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-lg text-xs font-bold" title="Tambah Sekolah Baru">➕ Sekolah</button>
+                    <button onclick="openAddSchoolModal()" class="px-2.5 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg text-xs font-bold" title="Tambah Sekolah Baru">➕ Sekolah</button>
                 </div>
             </div>
 
@@ -377,20 +385,25 @@
         </section>
 
         <!-- ===================================================================== -->
-        <!-- TAB 3: PEMETAAN EDS (GRAFIK LIVE) & REKAP REFLEKSI GURU               -->
+        <!-- TAB 3: PEMETAAN EDS (GRAFIK LIVE & SYNC PBD) & REKAP REFLEKSI GURU   -->
         <!-- ===================================================================== -->
         <section id="tab-pemetaan" class="tab-section hidden space-y-5">
             <!-- EDS Gap Analysis -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 card-box">
                 <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-slate-200 dark:border-slate-700 no-print">
                     <div>
-                        <h2 class="text-lg font-bold">📊 Pemetaan Mutu: Evaluasi Diri Sekolah (EDS) & Rapor Pendidikan</h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Hasil analisis kesenjangan (Gap) ini menjadi dasar penentuan prioritas pada Tab Perencanaan (RKT/PBD).</p>
+                        <span class="px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-[11px] font-bold rounded">TITIK START SUBSTANTIF MONEV (M2: MEMETAKAN)</span>
+                        <h2 class="text-lg font-bold mt-1">📊 Pemetaan Mutu: Evaluasi Diri Sekolah (EDS) & Rapor Pendidikan</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Tambah atau edit indikator EDS/Rapor Pendidikan, lalu kirim akar masalahnya ke Matriks PBD & RKT (Tab 4).</p>
                     </div>
-                    <button onclick="printActiveSection('Laporan Pemetaan Mutu EDS & Refleksi Guru')" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">🖨️ Cetak Laporan EDS</button>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="addEdsItem()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">➕ Tambah Indikator EDS</button>
+                        <button onclick="syncEdsToPbd()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm">🚀 Kirim Akar Masalah ke PBD (Tab 4)</button>
+                        <button onclick="printActiveSection('Laporan Pemetaan Mutu EDS & Refleksi Guru')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold">🖨️ Cetak</button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     <div class="lg:col-span-5 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                         <h3 class="text-xs font-bold uppercase text-center mb-2 text-slate-600 dark:text-slate-300">Visualisasi Capaian vs Target Mutu (%)</h3>
                         <div class="chart-container">
@@ -408,6 +421,7 @@
                                     <th class="p-2.5 w-20">Capaian</th>
                                     <th class="p-2.5 w-16">Gap</th>
                                     <th class="p-2.5">Akar Masalah Utama</th>
+                                    <th class="p-2.5 text-center w-12 no-print">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-eds" class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
@@ -454,10 +468,11 @@
             <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 card-box">
                 <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-slate-200 dark:border-slate-700 no-print">
                     <div>
-                        <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[11px] font-bold rounded">TERINTEGRASI DENGAN COACHING TIRTA & BUTIR 6/7</span>
+                        <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[11px] font-bold rounded">TERINTEGRASI DENGAN EDS (TAB 3) & COACHING TIRTA (TAB 6)</span>
                         <h2 class="text-lg font-bold mt-1">📅 Matriks Perencanaan Berbasis Data (PBD) & RKT — <span class="sync-quarter-label text-indigo-600 dark:text-indigo-400">Triwulan I</span></h2>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="syncEdsToPbd()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">📥 Tarik Akar Masalah EDS</button>
                         <button onclick="addPbdItem()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold">➕ Tambah Program PBD/RKT</button>
                         <button onclick="printActiveSection('Matriks PBD, RKT & Anggaran RKAS')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold">🖨️ Cetak</button>
                     </div>
@@ -724,15 +739,40 @@
         <div class="max-w-7xl mx-auto px-4 text-center space-y-1">
             <p class="italic text-slate-300 font-medium">"Melayani dengan empati, mengevaluasi dengan data, meningkatkan mutu tanpa henti."</p>
             <p>Super-App Terpadu SPMI (Permendikdasmen No. 21/2026) & Monev PKKS Model BKN • © 2026</p>
+            <p class="text-[11px] text-emerald-400 font-semibold pt-0.5">Pengembang: IFS</p>
         </div>
     </footer>
+
+    <!-- CUSTOM MODAL FOR ADDING NEW SCHOOL (NO PROMPT/ALERT) -->
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">🏫 Tambah Satuan Pendidikan Binaan Baru</h3>
+                <button onclick="closeAddSchoolModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Nama Satuan Pendidikan</label>
+                    <input type="text" id="modal-school-name" placeholder="Contoh: SMPN 4 Tarogong Kidul" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Nama Lengkap Kepala Sekolah</label>
+                    <input type="text" id="modal-ks-name" placeholder="Contoh: Drs. Ahmad Fauzi, M.Pd." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddSchoolModal()" class="px-3.5 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold">Batal</button>
+                <button onclick="confirmAddSchool()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">Simpan Sekolah</button>
+            </div>
+        </div>
+    </div>
 
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl border border-emerald-500 text-xs font-bold hidden z-50"></div>
 
     <!-- APPLICATION LOGIC -->
     <script>
-        const STORAGE_KEY = "SUPERAPP_SPMI_PKKS_2026_V1";
+        const STORAGE_KEY = "SUPERAPP_SPMI_PKKS_2026_V2";
 
         // ==========================================
         // 1. MASTER DATA DEFINITIONS
@@ -848,7 +888,7 @@
             selectedSchoolId: 1,
             currentQuarter: "T1",
             darkMode: false,
-            fontSize: 15,
+            fontSize: 16,
             schools: {}
         };
 
@@ -951,7 +991,7 @@
 
         function loadFromStorage() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY);
+                const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("SUPERAPP_SPMI_PKKS_2026_V1");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed && parsed.schools) {
@@ -970,7 +1010,7 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
                 if (showNotif) showToast("💾 Seluruh data SPMI & PKKS tersimpan permanen!");
             } catch (e) {
-                alert("Gagal menyimpan ke browser: kapasitas penyimpanan penuh.");
+                showToast("⚠️ Gagal menyimpan: Kapasitas penyimpanan penuh.");
             }
         }
 
@@ -989,7 +1029,7 @@
             const t = document.getElementById("toast");
             t.textContent = msg;
             t.classList.remove("hidden");
-            setTimeout(() => t.classList.add("hidden"), 2600);
+            setTimeout(() => t.classList.add("hidden"), 3000);
         }
 
         function toggleDarkMode() {
@@ -999,14 +1039,23 @@
         }
 
         function adjustFontSize(delta) {
-            appState.fontSize = Math.min(20, Math.max(13, appState.fontSize + delta));
+            appState.fontSize = Math.min(22, Math.max(14, appState.fontSize + delta));
             applyThemeAndFont();
             saveAllData();
-            showToast(`🔍 Ukuran teks: ${appState.fontSize}px`);
+            showToast(`🔍 Ukuran teks layar: ${appState.fontSize}px (Cetak tetap standar)`);
+        }
+
+        function resetFontSize() {
+            appState.fontSize = 16;
+            applyThemeAndFont();
+            saveAllData();
+            showToast("🔍 Ukuran teks dikembalikan ke standar (16px)");
         }
 
         function applyThemeAndFont() {
             document.documentElement.style.setProperty("--user-font-size", `${appState.fontSize}px`);
+            const indicator = document.getElementById("btn-font-indicator");
+            if (indicator) indicator.textContent = `${appState.fontSize}px`;
             const btn = document.getElementById("btn-theme");
             if (appState.darkMode) {
                 document.documentElement.classList.add("dark");
@@ -1035,7 +1084,6 @@
             activeBtn.classList.add("active");
             activeBtn.classList.remove("text-slate-300");
 
-            // Resize charts when tab becomes visible
             if (tabId === "tab-pemetaan" && edsChart) setTimeout(() => edsChart.resize(), 80);
             if (tabId === "tab-perencanaan" && rkasChart) setTimeout(() => rkasChart.resize(), 80);
             if (tabId === "tab-laporan") renderExecutiveReport();
@@ -1070,16 +1118,34 @@
             showToast(`🏫 Beralih ke ${getCurrentSchool().profile.schoolName}`);
         }
 
-        function addNewSchool() {
-            const name = prompt("Masukkan Nama Satuan Pendidikan Baru:");
-            if (!name || !name.trim()) return;
-            const ks = prompt("Masukkan Nama Kepala Sekolah:") || "Kepala Sekolah";
+        function openAddSchoolModal() {
+            document.getElementById("modal-school-name").value = "";
+            document.getElementById("modal-ks-name").value = "";
+            const modal = document.getElementById("modal-overlay");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function closeAddSchoolModal() {
+            const modal = document.getElementById("modal-overlay");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        function confirmAddSchool() {
+            const name = document.getElementById("modal-school-name").value.trim();
+            const ks = document.getElementById("modal-ks-name").value.trim() || "Kepala Sekolah";
+            if (!name) {
+                showToast("⚠️ Nama Satuan Pendidikan wajib diisi!");
+                return;
+            }
             const newId = Object.keys(appState.schools).length + 1;
-            appState.schools[newId] = createDefaultSchoolObj(newId, name.trim(), ks.trim());
+            appState.schools[newId] = createDefaultSchoolObj(newId, name, ks);
             appState.selectedSchoolId = newId;
             populateSchoolDropdown();
             loadSchoolUI();
             saveAllData(true);
+            closeAddSchoolModal();
         }
 
         function switchQuarter(qKey) {
@@ -1133,7 +1199,6 @@
             p.locDate = document.getElementById("inp-loc-date").value;
             p.periodYear = document.getElementById("inp-period-year").value;
 
-            // Sync Penanggung Jawab TPMS baris pertama otomatis
             if (s.spmiDocs.tpms[0]) {
                 s.spmiDocs.tpms[0].name = p.ksName;
                 s.spmiDocs.tpms[0].nip = p.ksNip;
@@ -1240,7 +1305,7 @@
         }
 
         // ==========================================
-        // 7. TAB 3: PEMETAAN EDS & REFLEKSI GURU
+        // 7. TAB 3: PEMETAAN EDS (DINAMIS & SYNC PBD) & REFLEKSI GURU
         // ==========================================
         function renderEdsAndRefleksi() {
             const s = getCurrentSchool();
@@ -1250,23 +1315,24 @@
 
             tbodyEds.innerHTML = s.eds.map((item, idx) => {
                 const gap = (item.actual - item.target).toFixed(1);
-                if (gap < worstGap) {
+                if (parseFloat(gap) < worstGap) {
                     worstGap = parseFloat(gap);
                     worstLabel = item.label;
                 }
                 return `
                     <tr>
-                        <td class="p-2 font-semibold">${item.label}</td>
+                        <td class="p-2"><input type="text" value="${item.label}" onchange="updateEdsItem(${idx}, 'label', this.value)" class="w-full p-1 rounded border border-slate-300 dark:border-slate-600 bg-transparent font-semibold"></td>
                         <td class="p-2"><input type="number" step="0.5" value="${item.target}" onchange="updateEdsItem(${idx}, 'target', this.value)" class="w-16 p-1 rounded border border-slate-300 dark:border-slate-600 bg-transparent"></td>
                         <td class="p-2"><input type="number" step="0.5" value="${item.actual}" onchange="updateEdsItem(${idx}, 'actual', this.value)" class="w-16 p-1 rounded border border-slate-300 dark:border-slate-600 bg-transparent font-bold text-indigo-600 dark:text-indigo-400"></td>
-                        <td class="p-2 font-bold ${gap < 0 ? 'text-rose-600' : 'text-emerald-600'}">${gap}%</td>
+                        <td class="p-2 font-bold ${parseFloat(gap) < 0 ? 'text-rose-600' : 'text-emerald-600'}">${gap}%</td>
                         <td class="p-2"><input type="text" value="${item.cause}" onchange="updateEdsItem(${idx}, 'cause', this.value)" class="w-full p-1 rounded border border-slate-300 dark:border-slate-600 bg-transparent"></td>
+                        <td class="p-2 text-center no-print"><button onclick="removeEdsItem(${idx})" class="px-2 py-1 bg-rose-100 text-rose-700 rounded font-bold hover:bg-rose-200" title="Hapus Indikator">✕</button></td>
                     </tr>
                 `;
             }).join("");
 
             document.getElementById("eds-insight-box").innerHTML = worstLabel
-                ? `<strong>Prioritas Pembenahan PBD:</strong> Kesenjangan terbesar pada <strong>${worstLabel} (${worstGap}%)</strong>. Disarankan masuk ke RKT & RKAS.`
+                ? `<strong>Prioritas Pembenahan PBD:</strong> Kesenjangan terbesar pada <strong>${worstLabel} (${worstGap}%)</strong>. Klik tombol <em>"🚀 Kirim Akar Masalah ke PBD"</em> untuk menyusun rencana benahi di Tab 4.`
                 : `<strong>Capaian Optimal:</strong> Seluruh indikator EDS telah memenuhi target yang ditetapkan.`;
 
             updateEdsChart();
@@ -1274,9 +1340,72 @@
         }
 
         function updateEdsItem(idx, field, val) {
-            getCurrentSchool().eds[idx][field] = field === "cause" ? val : (parseFloat(val) || 0);
+            if (field === "cause" || field === "label") {
+                getCurrentSchool().eds[idx][field] = val;
+            } else {
+                getCurrentSchool().eds[idx][field] = parseFloat(val) || 0;
+            }
             renderEdsAndRefleksi();
             saveAllData();
+        }
+
+        function addEdsItem() {
+            getCurrentSchool().eds.push({
+                label: "D.8 Iklim Kebinekaan",
+                target: 85,
+                actual: 70.0,
+                cause: "Perlu penguatan proyek penguatan profil pelajar & toleransi."
+            });
+            renderEdsAndRefleksi();
+            saveAllData();
+            showToast("➕ Baris indikator EDS baru ditambahkan!");
+        }
+
+        function removeEdsItem(idx) {
+            if (getCurrentSchool().eds.length <= 1) {
+                showToast("⚠️ Minimal harus ada 1 indikator pemetaan EDS.");
+                return;
+            }
+            getCurrentSchool().eds.splice(idx, 1);
+            renderEdsAndRefleksi();
+            saveAllData();
+        }
+
+        function syncEdsToPbd() {
+            const s = getCurrentSchool();
+            const qData = getCurrentQuarterObj();
+            const priorityItems = s.eds.filter(e => (e.actual - e.target) < 0);
+
+            if (priorityItems.length === 0) {
+                showToast("✅ Semua indikator EDS sudah memenuhi target (tidak ada gap minus).");
+                return;
+            }
+
+            let addedCount = 0;
+            priorityItems.forEach(item => {
+                const gap = (item.actual - item.target).toFixed(1);
+                const exists = qData.pbd.some(p => p.aspek.includes(item.label));
+                if (!exists) {
+                    qData.pbd.push({
+                        aspek: `${item.label} (Gap ${gap}%)`,
+                        dim6m: "Merencanakan",
+                        identifikasi: `Capaian aktual ${item.actual}% masih di bawah target ${item.target}% (selisih ${gap}%).`,
+                        refleksi: item.cause || "Perlu pendalaman akar masalah bersama TPMS dan Kombel.",
+                        benahi: `Program penguatan & intervensi terfokus pada ${item.label}.`,
+                        anggaran: "BOS Reguler (RKAS)"
+                    });
+                    addedCount++;
+                }
+            });
+
+            renderPbdList();
+            saveAllData();
+            switchTab("tab-perencanaan");
+            if (addedCount > 0) {
+                showToast(`🚀 ${addedCount} akar masalah EDS berhasil dikirim ke Matriks PBD & RKT!`);
+            } else {
+                showToast("ℹ️ Seluruh indikator EDS bermasalah sudah ada di Matriks PBD triwulan ini.");
+            }
         }
 
         function updateEdsChart() {
@@ -1478,7 +1607,6 @@
             const qMeta = quarterMeta[qKey];
             const qData = getCurrentQuarterObj();
 
-            // Update Banner
             const banner = document.getElementById("pkks-quarter-banner");
             banner.className = `p-3.5 rounded-xl mb-4 text-xs border ${qMeta.color}`;
             banner.innerHTML = `<strong>${qMeta.full}</strong> — ${qMeta.desc}`;
@@ -1529,7 +1657,6 @@
                         <h3 class="text-sm font-bold text-indigo-700 dark:text-indigo-400">📌 ${b.name}</h3>
                         <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800">${b.comp}</span>
                     </div>
-                    <!-- Google Drive Folder Bar -->
                     <div class="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-indigo-400 text-xs no-print">
                         <span class="font-bold text-indigo-600 dark:text-indigo-400">📁 Drive Bukti Butir:</span>
                         <input type="text" value="${driveObj.url}" onchange="updateButirDrive(${b.id}, 'url', this.value)" placeholder="Paste link Google Drive folder ${b.name}..." class="flex-grow p-1.5 rounded border border-slate-300 dark:border-slate-600 bg-transparent">
@@ -1687,7 +1814,10 @@
 
         function syncPbdToTirta() {
             const pbdList = getCurrentQuarterObj().pbd;
-            if (!pbdList.length) return alert("Belum ada data PBD pada triwulan ini.");
+            if (!pbdList.length) {
+                showToast("⚠️ Belum ada data PBD pada triwulan ini.");
+                return;
+            }
             const summary = pbdList.map((p, i) => `${i + 1}. [${p.aspek}] -> ${p.benahi}`).join("\n");
             getCurrentQuarterObj().tirta[2].ks += `\n\n[Sinkronisasi PBD]:\n${summary}`;
             renderTirtaAndSupervisi();
@@ -1753,7 +1883,6 @@
             const qKey = appState.currentQuarter;
             const qData = getCurrentQuarterObj();
 
-            // 1. Hitung Skor Hasil Kerja (45 Sub-Butir)
             let total = 0, count = 0;
             qData.subScores.forEach(item => {
                 if (item.score) { total += parseInt(item.score); count++; }
@@ -1764,7 +1893,6 @@
             if (avg >= 3.5) hasilKerja = "Di Atas Ekspektasi";
             else if (avg < 2.5 && count > 0) hasilKerja = "Di Bawah Ekspektasi";
 
-            // 2. Hitung Rating Perilaku BerAKHLAK
             let countAtas = 0, countBawah = 0;
             masterBerakhlak.forEach(b => {
                 const r = qData.perilaku[b.key]?.rating || "Sesuai Ekspektasi";
@@ -1776,7 +1904,6 @@
             if (countAtas >= 4 && countBawah === 0) perilaku = "Di Atas Ekspektasi";
             else if (countBawah >= 2) perilaku = "Di Bawah Ekspektasi";
 
-            // 3. Silangkan pada Matriks BKN
             const matrixMap = {
                 "Di Atas Ekspektasi|Di Atas Ekspektasi": { label: "SANGAT BAIK", cell: "m-atas-atas" },
                 "Di Atas Ekspektasi|Sesuai Ekspektasi": { label: "SANGAT BAIK", cell: "m-atas-sesuai" },
@@ -1801,7 +1928,6 @@
             const activeCell = document.getElementById(res.cell);
             if (activeCell) activeCell.classList.add("cell-active");
 
-            // Render Executive Summary & Signature Block
             const totalRkas = s.rkas.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
             const pbdText = qData.pbd.map(x => `<li><strong>${x.aspek}</strong> (${x.dim6m}): ${x.benahi || '-'}</li>`).join("");
             const tirtaText = qData.tirta.map(x => `<li><strong>${x.step}:</strong> ${x.ks || '-'}</li>`).join("");
@@ -1919,10 +2045,6 @@
             showToast("📥 File backup JSON berhasil diunduh!");
         }
 
-        function triggerImport() {
-            document.getElementById("file-import").click();
-        }
-
         function importJSON(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1938,10 +2060,10 @@
                         loadSchoolUI();
                         showToast("📤 Data JSON berhasil dipulihkan!");
                     } else {
-                        alert("Format file JSON tidak dikenali.");
+                        showToast("⚠️ Format file JSON tidak dikenali.");
                     }
                 } catch (err) {
-                    alert("Gagal membaca file JSON.");
+                    showToast("⚠️ Gagal membaca file JSON.");
                 }
             };
             reader.readAsText(file);
